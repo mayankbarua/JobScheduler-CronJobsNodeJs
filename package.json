@@ -12,6 +12,7 @@
   "dependencies": {
     "@azure/identity": "^3.0.0",
     "@azure/keyvault-secrets": "^4.6.0",
+    "applicationinsights": "^2.3.6",
     "dotenv": "^16.0.3",
     "fs": "0.0.1-security",
     "node-schedule": "^2.1.0",

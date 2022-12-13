@@ -1,6 +1,6 @@
 const nodeSchedule  = require("node-schedule");
 import notificationService from '../services/notification'
-import fileChecker from '../services/fileChecker'
+import {fileChecker,fileCheckerWithWildCard,fileSizeChecker} from '../services/fileChecker'
 import {timeValidator,fileValidator} from './validator'
 
 async function scheduleJob(time,fileShare,fileName){
@@ -26,28 +26,44 @@ async function scheduleJob(time,fileShare,fileName){
         const currentDate = new Date();
         let day = currentDate.getDate();
         let month = currentDate.getMonth();
-        let weekDay = currentDate.getDay()
+        let weekDay = currentDate.getDay();
+        let year = currentDate.getFullYear();
 
-        let schedule = minute+" "+hour+" "+day+" "+(month+1)+" "+weekDay;
-        console.log("Job Scheduled at "+schedule)
-        console.log("Current Time "+new Date());
+        const rule = new nodeSchedule.RecurrenceRule();
+        rule.minute = minute;
+        rule.hour = hour;
+        rule.date = day;
+        rule.month = month
+        rule.year = year;
+        rule.tz = 'America/Los_Angeles';
 
-        nodeSchedule.scheduleJob(schedule, function(){
+        let runTime = new Date();
+
+        console.log("Current Time "+runTime);
+
+        nodeSchedule.scheduleJob(rule, function(){
             console.log("---------------------");
             console.log("Task Started at "+new Date());
             const isFilePresent = fileChecker(fileShare,fileName);
 
             if(isFilePresent){
-                notificationService("File : "+fileName+" is Present at Location "+fileShare+ " on Date : "+new Date()+", Job Scheduled Time Was : "+schedule,"File Alert");
+                let fileSize = fileSizeChecker(fileShare,fileName);
+
+                if(fileSize == 0){
+                    notificationService("File : "+fileName+" is Present at Location "+fileShare+ " on Date : "+new Date()+" But File Contain Zero Records, Job Scheduled Time Was : "+runTime,"File Alert");
+                }else{
+                    notificationService("File : "+fileName+" is Present at Location "+fileShare+ " on Date : "+new Date()+", Job Scheduled Time Was : "+runTime,"File Alert");
+                }
+                
             }        
             else{
-                notificationService("File : "+fileName+" is not Present at Location : "+fileShare+ " on Date : "+new Date()+", Job Scheduled Time Was : "+schedule,"File Alert");
+                notificationService("File : "+fileName+" is not Present at Location : "+fileShare+ " on Date : "+new Date()+", Job Scheduled Time Was : "+runTime,"File Alert");
             }
         
             console.log("Task Ended at "+new Date())
         });
 
-        return schedule;
+        return runTime;
 
     }catch(exception){
         console.log(exception)

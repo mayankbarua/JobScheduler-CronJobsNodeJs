@@ -1,11 +1,10 @@
 import KeyVaultManager from "./keyvaultmanager";
+const dotenv = require("dotenv");
+dotenv.config();
 
 async function buildConfig(){
   console.log("Started Connecting to Database");
   const keyvaultmanager = new KeyVaultManager();
-
-  const dotenv = require("dotenv");
-  dotenv.config();
   
   const userName = await keyvaultmanager.getSecret("DatabaseAdminLoginUserName");
   const password = await keyvaultmanager.getSecret("DatabaseAdminLoginPassword"); 

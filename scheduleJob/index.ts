@@ -3,6 +3,9 @@ const TYPES = require('tedious').TYPES;
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import scheduleJob from "../services/scheduler";
 import Config from '../services/dbConfig';
+import {fileChecker,fileCheckerWithWildCard,fileSizeChecker} from '../services/fileChecker'
+import client from '../services/logger'
+const nodeSchedule  = require("node-schedule");
 
 
 async function getInboundSchedule(){
@@ -42,13 +45,25 @@ async function getInboundSchedule(){
 
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+
+    client.trackTrace({message: "HTTP trigger function processed a request."});
+    
     context.log('HTTP trigger function processed a request.');
 
+    client.trackTrace({message: "Started GET Request"});
+    
     console.log("Started GET Request");
 
     let result : any;
     result = await getInboundSchedule();
-        
+
+    //Call A Function to Run at Every 1 Min
+    // nodeSchedule.scheduleJob("*/1 * * * *", function(){
+    //     fileChecker('\/\/triton1\/tst_transfer\/MBARUA','IT*')
+    // });    
+
+    client.trackTrace({message: "Job Is Scheduled"});
+    
     context.res.status(200).json({"Message": "Job Is Scheduled"});
 };
 
